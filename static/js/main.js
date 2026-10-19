@@ -28,6 +28,9 @@
   const turnCounterLive = document.getElementById("turn-counter");
   const step3Intro = document.getElementById("step3-intro");
 
+  const mobileBackToChatBtn = document.getElementById("mobile-back-to-chat-btn");
+  const mobileToReportBtn = document.getElementById("mobile-to-report-btn");
+
   const TOTAL_TURNS = window.SDM_TOTAL_TURNS || 9;
   const EARLY_END_TURN = window.SDM_EARLY_END_TURN || 6;
 
@@ -93,6 +96,23 @@
   function markField(el, valid) {
     el.classList.toggle("invalid", !valid);
   }
+
+  // 모바일(768px 이하)에서는 body[data-mobile-step] 값에 따라 CSS가 한 화면만 보여준다.
+  // 데스크톱에서는 이 값이 레이아웃에 영향을 주지 않는다.
+  const mobileQuery = window.matchMedia("(max-width: 768px)");
+
+  function setMobileStep(step) {
+    document.body.dataset.mobileStep = String(step);
+    if (mobileQuery.matches) window.scrollTo(0, 0);
+  }
+
+  mobileBackToChatBtn.addEventListener("click", function () {
+    setMobileStep(2);
+  });
+
+  mobileToReportBtn.addEventListener("click", function () {
+    setMobileStep(3);
+  });
 
   function setLoading(button, isLoading, loadingText, normalText) {
     button.disabled = isLoading;
@@ -223,6 +243,7 @@
 
     step1Panel.hidden = true;
     step2Panel.hidden = false;
+    setMobileStep(2);
     step2Panel.scrollIntoView({ behavior: "smooth", block: "start" });
     chatInput.focus({ preventScroll: true });
   });
@@ -401,6 +422,8 @@
       feedbackArea.hidden = false;
     } finally {
       setLoading(submitFeedbackBtn, false, "채점 중...", "피드백 받기");
+      mobileToReportBtn.hidden = false;
+      setMobileStep(3);
     }
   });
 

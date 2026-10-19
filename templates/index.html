@@ -6,7 +6,7 @@
 <title>DNA-SDM · 의료윤리 공동의사결정 연습</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ asset_version }}">
 </head>
-<body>
+<body data-mobile-step="1">
 <header class="app-header">
   <h1>DNA-SDM</h1>
   <p class="header-subtitle">예비 한의사 의료윤리 갈등 사례 · 공동의사결정(SDM) 연습 — 교육·연구용, 실제 진료 도구 아님</p>
@@ -96,6 +96,18 @@
     <div id="step2-panel" class="step-panel step2-panel" hidden>
       <h3 class="step-title">Step 2. 대화 시작</h3>
 
+      <!-- 모바일 전용: 사례 배경 패널이 숨겨지므로 접이식 요약을 제공 -->
+      <details class="mobile-case-summary">
+        <summary>📋 사례 요약 보기 · {{ case.name }} ({{ case.age }}세 · {{ case.gender }})</summary>
+        <div class="mobile-case-summary-body">
+          <p><strong>대화 상대</strong> {{ case.counterpart_role }}</p>
+          <p><strong>주호소</strong> {{ case.chief_complaint }}</p>
+          {% for sentence in case.background | sentences %}
+          <p>{{ sentence }}</p>
+          {% endfor %}
+        </div>
+      </details>
+
       <div class="sdm-rubric-guide">
         <div class="sdm-rubric-header">
           <div class="sdm-rubric-title">💡 SDM 평가 항목 (4개 항목 · 각 1~10점)</div>
@@ -150,6 +162,7 @@
         placeholder="대화를 돌아보며 자유롭게 작성해주세요."></textarea>
       <p id="step3-error" class="field-error" hidden></p>
       <button type="button" id="submit-feedback-btn" class="primary-btn">피드백 받기</button>
+      <button type="button" id="mobile-to-report-btn" class="mobile-only-btn" hidden>피드백 리포트로 돌아가기 →</button>
     </div>
   </section>
 
@@ -169,6 +182,9 @@
         <h4>이 사례에서 고려할 수 있었던 관점</h4>
         <ul id="options-list" class="options-list"></ul>
       </div>
+
+      <!-- 모바일 전용: 리포트 화면에서 대화/성찰 화면으로 돌아가기 -->
+      <button type="button" id="mobile-back-to-chat-btn" class="mobile-only-btn">← 대화 · 성찰 내용 다시 보기</button>
     </div>
   </aside>
 </main>

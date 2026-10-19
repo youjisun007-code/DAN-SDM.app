@@ -37,7 +37,7 @@ SHEETS_WEBHOOK_URL = os.environ.get("GOOGLE_SHEETS_WEBHOOK_URL")
 SHEETS_WEBHOOK_TOKEN = os.environ.get("GOOGLE_SHEETS_WEBHOOK_TOKEN")
 
 # static/css, static/js 변경 시 올려서 브라우저 캐시를 무효화한다.
-ASSET_VERSION = "16"
+ASSET_VERSION = "17"
 
 
 @app.context_processor
