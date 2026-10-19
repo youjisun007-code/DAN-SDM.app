@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DNA-SDM · 의료윤리 공동의사결정 연습</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ asset_version }}">
+</head>
+<body>
+<header class="app-header">
+  <h1>DNA-SDM</h1>
+  <p class="header-subtitle">예비 한의사 의료윤리 갈등 사례 · 공동의사결정(SDM) 연습 — 교육·연구용, 실제 진료 도구 아님</p>
+</header>
+
+<main class="layout">
+  <!-- 좌측: 사례 배경 -->
+  <aside class="panel case-panel">
+    <h2>사례 배경</h2>
+
+    <div class="case-select-row">
+      <label for="case-select"><span class="case-select-pointer" aria-hidden="true">&#x261E;&#xFE0E;</span>윤리 갈등 사례를 선택해주세요</label>
+      <select id="case-select">
+        {% for c in case_list %}
+        <option value="{{ c.id }}" {% if c.id == case_id %}selected{% endif %}>
+          {{ c.label }} ({{ c.difficulty }})
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-row">
+        <span class="label">대화 상대</span>
+        <span class="value">{{ case.counterpart_role }}</span>
+      </div>
+      <div class="profile-row">
+        <span class="label">이름</span>
+        <span class="value">{{ case.name }}</span>
+      </div>
+      <div class="profile-row">
+        <span class="label">나이/성별</span>
+        <span class="value">{{ case.age }}세 · {{ case.gender }}</span>
+      </div>
+      <div class="profile-row">
+        <span class="label">주호소</span>
+        <span class="value">{{ case.chief_complaint }}</span>
+      </div>
+    </div>
+
+    <div class="background-card">
+      <h3>배경 상황</h3>
+      {% for sentence in case.background | sentences %}
+      <p>{{ sentence }}</p>
+      {% endfor %}
+    </div>
+
+    <div class="step-guide">
+      <strong class="step-guide-title">🧭 실습 진행 단계 (Step 1~3)</strong>
+      <div class="step-guide-item">• <strong>Step 1.</strong> 사례 분석 및 사전 윤리원칙 선택</div>
+      <div class="step-guide-item">• <strong>Step 2.</strong> 가상 환자 면담 ({{ sdm_early_end_turn }}~{{ sdm_total_turns }}턴 대화)</div>
+      <div class="step-guide-item">• <strong>Step 3.</strong> AI 평가 리포트 확인 및 성찰문 제출</div>
+      <div class="step-guide-note">※ 사례 변경 시 대화 내용은 초기화됩니다.</div>
+    </div>
+  </aside>
+
+  <!-- 중앙: 채팅창 -->
+  <section class="panel chat-panel">
+    <!-- Step 1: 학번/이름 + 윤리 원칙 선택 -->
+    <div id="step1-panel" class="step-panel">
+      <div class="student-name-row">
+        <label for="student-id">학번</label>
+        <input type="text" id="student-id" placeholder="학번을 입력하세요" autocomplete="off">
+        <label for="student-name">이름</label>
+        <input type="text" id="student-name" placeholder="실습 전 이름을 입력하세요" autocomplete="off">
+      </div>
+
+      <h3 class="step-title step1-heading">Step 1. 임상 갈등 상황에서 당신은 어떤 윤리 원칙을 더 중시하나요?</h3>
+
+      <div id="principle-select" class="principle-select">
+        <p class="principle-hint">정답은 없습니다.</p>
+        <div class="principle-cards">
+          {% for principle in ethics_principles %}
+          <button type="button" class="principle-card" data-principle-id="{{ principle.id }}">
+            <span class="principle-title">{{ principle.title }}</span>
+            <span class="principle-desc">{{ case.ethics_card_texts[principle.id] }}</span>
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <p id="step1-error" class="field-error" hidden></p>
+      <button type="button" id="start-sdm-btn" class="primary-btn">대화 시작</button>
+    </div>
+
+    <!-- Step 2: SDM 대화 -->
+    <div id="step2-panel" class="step-panel step2-panel" hidden>
+      <h3 class="step-title">Step 2. 대화 시작</h3>
+
+      <div class="sdm-rubric-guide">
+        <div class="sdm-rubric-header">
+          <div class="sdm-rubric-title">💡 SDM 평가 항목 (4개 항목 · 각 1~10점)</div>
+          <div class="sdm-rubric-badge-turns">
+            대화 진행: 총 {{ sdm_total_turns }}턴 ({{ sdm_early_end_turn }}번째 턴부터 종료 및 성찰일지 작성 가능)
+          </div>
+        </div>
+        <div class="sdm-rubric-note">대화 내용과 Step 3 사후 성찰문을 함께 평가합니다.</div>
+        <div class="sdm-rubric-levels">
+          <div class="sdm-rubric-row">
+            <span class="sdm-badge">Choice Talk</span>
+            <span class="sdm-rubric-desc"><b>선택권 안내</b>: 상대방에게 선택할 권리가 있음을 알리고, 환자/보호자의 생각과 우려를 경청</span>
+          </div>
+          <div class="sdm-rubric-row">
+            <span class="sdm-badge">Option Talk</span>
+            <span class="sdm-rubric-desc"><b>선택지 설명</b>: 각 선택지의 장단점·근거를 이해하기 쉽게 설명하고, 상대방의 이해 확인</span>
+          </div>
+          <div class="sdm-rubric-row">
+            <span class="sdm-badge">Decision Talk</span>
+            <span class="sdm-rubric-desc"><b>결정 도출</b>: 상대방의 가치와 선호를 이끌어내고, 이를 반영해 함께 결정(또는 신중한 유예)</span>
+          </div>
+          <div class="sdm-rubric-row">
+            <span class="sdm-badge">Ethical Reasoning</span>
+            <span class="sdm-rubric-desc"><b>윤리적 성찰</b>: 통제 가능한 영역(나의 설명·태도)과 통제할 수 없는 영역(상대의 선택권 등)을 구분해 접근하고, 성찰문에서 나의 윤리적 영향과 한계를 돌아봄</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="chat-window" class="chat-window"></div>
+      <p id="turn-counter" class="turn-counter">대화 진행: 0 / {{ sdm_total_turns }}턴</p>
+      <form id="chat-form" class="chat-form">
+        <input
+          type="text"
+          id="chat-input"
+          placeholder="상대방에게 이야기를 건네보세요..."
+          autocomplete="off"
+          required
+        >
+        <button type="submit" id="chat-send-btn">전송</button>
+      </form>
+      <button type="button" id="end-visit-btn" class="end-btn" disabled>대화 종료 및 성찰 작성하기 ({{ sdm_early_end_turn }}턴 이상부터 가능)</button>
+    </div>
+
+    <!-- Step 3: 사후 성찰 -->
+    <div id="step3-panel" class="step-panel" hidden>
+      <h3 class="step-title">Step 3. 사후 성찰</h3>
+      <p id="step3-intro" class="hint" hidden></p>
+      <label class="step-label" for="step3-reflection">
+        나의 대화가 상대방에게 미친 윤리적 영향과 나의 한계는 무엇이었는가?
+      </label>
+      <textarea id="step3-reflection" class="step-textarea" rows="5"
+        placeholder="대화를 돌아보며 자유롭게 작성해주세요."></textarea>
+      <p id="step3-error" class="field-error" hidden></p>
+      <button type="button" id="submit-feedback-btn" class="primary-btn">피드백 받기</button>
+    </div>
+  </section>
+
+  <!-- 우측: 피드백 리포트 -->
+  <aside class="panel feedback-panel">
+    <h2>피드백 리포트</h2>
+    <p id="feedback-placeholder" class="hint">Step 3에서 성찰문을 제출하면 이곳에 최종 피드백이 표시됩니다.</p>
+
+    <div id="feedback-area" class="feedback-area" hidden>
+      <h3>SDM · 윤리적 성찰 피드백</h3>
+      <p class="turn-count"></p>
+      <div id="total-score-badge" class="total-score-badge" hidden>총점: <strong></strong> / 40점</div>
+      <ul id="feedback-list" class="feedback-list"></ul>
+      <p class="overall-comment"></p>
+
+      <div id="options-debrief" class="options-debrief" hidden>
+        <h4>이 사례에서 고려할 수 있었던 관점</h4>
+        <ul id="options-list" class="options-list"></ul>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer class="app-footer">
+  DNA-SDM은 교육·연구용 프로그램입니다. 실제 진료·처방에 사용하지 마세요. 모든 대화 로그는 연구자 확인을 위해 저장됩니다.
+</footer>
+
+<script>
+  window.CASE_OPENING_LINE = {{ case.opening_line | tojson }};
+  window.SDM_TOTAL_TURNS = {{ sdm_total_turns | tojson }};
+  window.SDM_EARLY_END_TURN = {{ sdm_early_end_turn | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/main.js') }}?v={{ asset_version }}"></script>
+<script>
+  document.getElementById("case-select").addEventListener("change", function (e) {
+    window.location.href = "/?case=" + encodeURIComponent(e.target.value);
+  });
+</script>
+</body>
+</html>

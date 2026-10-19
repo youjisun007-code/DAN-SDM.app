@@ -1,0 +1,8 @@
+.env
+venv/
+__pycache__/
+*.pyc
+.Rhistory
+server.log
+server_run.log
+server_*.log

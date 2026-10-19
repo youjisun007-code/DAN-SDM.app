@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>로그인 - DNA-SDM</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ asset_version }}">
+<style>
+  .login-wrap {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .login-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 32px;
+    width: 340px;
+    text-align: center;
+  }
+  .login-card h1 {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+  .login-card .subtitle {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 20px;
+  }
+  .login-card input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .login-card button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: #2563eb;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .login-card button:hover {
+    background: #1d4ed8;
+  }
+  .login-error {
+    color: #dc2626;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .disclaimer {
+    margin-top: 18px;
+    font-size: 11px;
+    color: #9ca3af;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card">
+    <h1>DNA-SDM</h1>
+    <p class="subtitle">예비 한의사 의료윤리·공동의사결정(SDM) 연습</p>
+    {% if error %}
+    <p class="login-error">{{ error }}</p>
+    {% endif %}
+    <form method="POST">
+      <input type="password" name="password" placeholder="접속 비밀번호" autofocus required>
+      <button type="submit">입장</button>
+    </form>
+    <p class="disclaimer">
+      본 앱은 교육·연구용입니다. 실제 진료·처방 도구가 아니며,<br>
+      학습 대화 로그는 연구자 확인을 위해 저장됩니다.
+    </p>
+  </div>
+</div>
+</body>
+</html>
